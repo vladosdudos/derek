@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import List
 
 from tools.common.helper import get_next_props
-from topic_modelling.model import LDAModel, CountVectorizerWrapper, TMDocumentVectorizer
+from derek.topic_modelling.model import LDAModel, CountVectorizerWrapper, TMDocumentVectorizer
 
 
 def _parse_possible_props(possible_props: List[dict]):

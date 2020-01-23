@@ -51,6 +51,12 @@ class CountVectorizerWrapper(object):
     def get_vocab(self):
         return self._vectorizer.vocabulary_
 
+    def transform_token(self, token: str):
+        transformed = self._vectorizer.tokenizer({"tokens": [token]})
+        if not transformed or transformed[0] not in self._vectorizer.vocabulary_:
+            return None
+        return transformed[0]
+
 
 class LDAModel(object):
     def __init__(self, idx2word, config: dict):
@@ -101,8 +107,6 @@ class LDAModel(object):
         return self._model.get_top_tokens(num_tokens)
 
     def get_token_topics(self, token: str) -> Optional[np.ndarray]:
-        if token not in self._model.phi_.index:
-            return None
         return self._model.phi_.loc[token, :].to_numpy()
 
     def get_documents_topics(self, n_dw_matrice) -> np.ndarray:
@@ -133,9 +137,12 @@ class TMDocumentVectorizer(AbstractVectorizer):
         raw_doc = {"tokens": doc.tokens}
         n_dw = self._vectorizer.transform([raw_doc])
         doc_topics = self._model.get_documents_topics(n_dw)[0]
-        word_vectors = list(map(
-            lambda v: np.zeros(self._model.num_topics) if v is None else v,
-            map(self._model.get_token_topics, doc.tokens)))
+
+        transformed_tokens = map(self._vectorizer.transform_token, doc.tokens)
+
+        word_vectors = map(
+            lambda t: np.zeros(self._model.num_topics) if t is None else self._model.get_token_topics(t),
+            transformed_tokens)
 
         return list(map(lambda v: np.concatenate((doc_topics, v)), word_vectors))
 
