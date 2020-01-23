@@ -26,7 +26,7 @@ class SklearnTokenizerAdapter(object):
         return cls(StandardTokenProcessor.from_props(props), props.get("token_pattern", r".*"))
 
 
-class TMVectorizer(object):
+class CountVectorizerWrapper(object):
     def __init__(self, config: dict):
         tokenizer = SklearnTokenizerAdapter.from_props(config.get("tokenizer", {}))
         self._vectorizer = CountVectorizer(
@@ -119,8 +119,8 @@ class LDAModel(object):
         return self._config["num_topics"]
 
 
-class VectorizerWrapper(AbstractVectorizer):
-    def __init__(self, vectorizer: TMVectorizer, model: LDAModel):
+class TMDocumentVectorizer(AbstractVectorizer):
+    def __init__(self, vectorizer: CountVectorizerWrapper, model: LDAModel):
         super().__init__()
         self._vectorizer = vectorizer
         self._model = model

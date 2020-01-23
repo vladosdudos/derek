@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import List
 
 from tools.common.helper import get_next_props
-from topic_modelling.model import LDAModel, TMVectorizer, VectorizerWrapper
+from topic_modelling.model import LDAModel, CountVectorizerWrapper, TMDocumentVectorizer
 
 
 def _parse_possible_props(possible_props: List[dict]):
@@ -61,7 +61,7 @@ def main():
         print("-" * 40)
         print(datetime.now())
         print(f"Vectorizer props {v_idx}: {concrete_vect_props}")
-        vectorizer = TMVectorizer(concrete_vect_props)
+        vectorizer = CountVectorizerWrapper(concrete_vect_props)
         n_dw = vectorizer.fit_transform(raw_docs)
         vocab = vectorizer.get_vocab()
         print(f"Vocab size = {len(vocab)}")
@@ -86,7 +86,7 @@ def main():
             model = LDAModel({v: k for k, v in vocab.items()}, concrete_model_props)
             model.fit(n_dw)
 
-            wrapped = VectorizerWrapper(vectorizer, model)
+            wrapped = TMDocumentVectorizer(vectorizer, model)
             wrapped.save(os.path.join(model_path, "saved_model"))
 
             if args.top_tokens <= 0:
