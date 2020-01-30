@@ -19,11 +19,13 @@ def _build_graph(props: dict, out_size: int, shared_encoding, shared_inputs, opt
     gold_labels = tf.placeholder(tf.int32, shape=[None, None], name='labels')
     graph["inputs"]["labels"] = gold_labels
 
-    loss, label, _ = get_seq_labelling_loss(shared_encoding, seq_len, gold_labels, out_size, props)
+    shared_encoding = tf.nn.dropout(shared_encoding, graph["inputs"]["dropout_rate"])
+    loss, label, scores = get_seq_labelling_loss(shared_encoding, seq_len, gold_labels, out_size, props)
     train_op = get_train_op(loss, optimizer, props)
 
     graph["outputs"]["predictions"] = label
     graph['losses'] = [loss]
     graph['train_ops'] = [train_op]
+    graph["outputs"]["scores"] = scores
 
     return graph
